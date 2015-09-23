@@ -36,7 +36,7 @@ public class Socket:connect{
     }
     override init(addr: String, port: Int) {
         super.init(addr: addr, port: port)
-        var result = connect(15)
+        var result = connect(0)
         println(result.1)
     }
     private func connect(timeout: Int)->(Bool,String){

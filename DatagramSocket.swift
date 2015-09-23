@@ -22,7 +22,6 @@ import Foundation
 public class DatagramSocket:connect{
     override init() {
         super.init()
-        bind()
     }
     override init(port: Int) {
         super.init(port: port)
@@ -36,6 +35,9 @@ public class DatagramSocket:connect{
         let fd = c_datagramsocket(self.addr, Int32(self.port))
         if fd != -1{
             self.fd = fd
+            println("端口绑定成功:\(self.port)")
+        }else{
+            println("端口绑定失败:\(self.port)")
         }
     }
 
@@ -43,11 +45,16 @@ public class DatagramSocket:connect{
     public func recv(packet: DatagramPacket) -> Int{
         if let fd = self.fd{
             var remoteip : [Int8] = [Int8](count:16,repeatedValue:0x0)
-            var remoteport : Int32=0
+            var remoteport : Int32 = 0
             var dataLen: Int32 = c_datagramsocket_recive(fd,packet.data,Int32(packet.data.count), &remoteip, &remoteport)
             packet.port = Int(remoteport)
             packet.addr = String(CString: remoteip, encoding: NSUTF8StringEncoding)
+            if dataLen > 0{
+                println("接收成功:\(packet.addr!):\(packet.port!)\t\(packet.data[0...(dataLen - 1)])")
+            }
             return Int(dataLen)
+        }else{
+            println("断开连接")
         }
         return -1
     }
@@ -55,8 +62,16 @@ public class DatagramSocket:connect{
     
     public func send(packet: DatagramPacket) -> Int{
         if let fd = self.fd,addr = packet.addr,port = packet.port{
-            return Int(c_datagramsocket_send(fd,packet.data,Int32(packet.data.count),addr,Int32(port)))
+            let len = Int(c_datagramsocket_send(fd,packet.data,Int32(packet.data.count),addr,Int32(port)))
+            if len > 0{
+                println("发送成功:\(addr):\(port)\t\(packet.data)")
+                return len
+            }else{
+                println("发送失败:\(addr):\(port)\t\(packet.data)")
+                return -1
+            }
         }else{
+            println("发送失败")
             return -1
         }
     }

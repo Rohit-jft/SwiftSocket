@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+
 /*******
  * TCP *
  *******/
@@ -126,7 +127,7 @@ int socket_accept(int onsocketfd,char *remoteip,int* remoteport){
 
 
 /*******
- * TCP *
+ * UDP *
  *******/
 
 
@@ -136,19 +137,15 @@ int datagramsocket(const char *addr,int port){
     int reuseon = 1;
     setsockopt( socketfd, SOL_SOCKET, SO_REUSEADDR, &reuseon, sizeof(reuseon) );
     //bind
-    if (port != 0){
-        struct sockaddr_in serv_addr;
-        memset( &serv_addr, '\0', sizeof(serv_addr));
-        serv_addr.sin_family = AF_INET;
-        serv_addr.sin_addr.s_addr = inet_addr(addr);
-        serv_addr.sin_port = htons(port);
-        if (0 == bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
-            return socketfd;
-        }else{
-            return -1;
-        }
-    }else{
+    struct sockaddr_in serv_addr;
+    memset( &serv_addr, '\0', sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(addr);
+    serv_addr.sin_port = htons(port);
+    if (0 == bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) {
         return socketfd;
+    }else{
+        return -1;
     }
 }
 
